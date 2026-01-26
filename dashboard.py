@@ -286,10 +286,10 @@ def load_data():
 df = load_data()
 
 # ============================================
-# Chart Theme - Clean Black & White
+# Chart Theme - Clean Black & White with visible labels
 # ============================================
 CHART_COLORS = ['#0066FF', '#00AA55', '#FF6B35', '#6B4EFF', '#00B8D9']
-CHART_FONT = dict(family='Roboto, sans-serif', color='#000000')
+CHART_FONT = dict(family='Roboto, sans-serif', color='#333333', size=12)
 CHART_LAYOUT = dict(
     plot_bgcolor='#FFFFFF',
     paper_bgcolor='#FFFFFF',

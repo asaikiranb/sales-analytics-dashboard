@@ -365,13 +365,20 @@ CHART_LAYOUT = dict(
 # Axis tick font for all charts
 AXIS_TICKFONT = dict(color=theme['chart_text'], size=12)
 
-# ============================================
+# = ============================================
 # Header
 # ============================================
 st.markdown(f"""
-<div style="padding: 8px 0 16px 0;">
-    <span class="dashboard-title">Sales Analytics Dashboard</span>
-    <p class="dashboard-subtitle">Comprehensive sales data analysis across all regions and products</p>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 0 16px 0;">
+    <div>
+        <span class="dashboard-title">Sales Analytics Dashboard</span>
+        <p class="dashboard-subtitle">Comprehensive sales data analysis across all regions and products</p>
+    </div>
+    <div style="text-align: right; max-width: 450px;">
+        <p style="font-size: 0.95rem; color: {theme['text_secondary']}; font-weight: 500; line-height: 1.4; opacity: 0.9; margin: 0;">
+            Built by Saikiran Babu Annangi for the Data Platform Graduate Intern (Summer 2026) at Sigma Computing
+        </p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 

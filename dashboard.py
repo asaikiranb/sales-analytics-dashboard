@@ -348,9 +348,9 @@ with col1:
     """, unsafe_allow_html=True)
 
 with col2:
-    toggle_label = "🌙 Dark" if not st.session_state.dark_mode else "☀️ Light"
-    if st.button(toggle_label, key="theme_toggle", use_container_width=True):
-        st.session_state.dark_mode = not st.session_state.dark_mode
+    dark_mode = st.toggle("🌙 Dark Mode", value=st.session_state.dark_mode, key="theme_toggle")
+    if dark_mode != st.session_state.dark_mode:
+        st.session_state.dark_mode = dark_mode
         st.rerun()
 
 st.markdown("---")

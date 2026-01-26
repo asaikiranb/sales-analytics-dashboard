@@ -15,43 +15,20 @@ st.set_page_config(
 )
 
 # ============================================
-# Theme Toggle State
+# Theme Colors (Fixed Light Theme)
 # ============================================
-if 'dark_mode' not in st.session_state:
-    st.session_state.dark_mode = False
-
-# ============================================
-# Theme Colors
-# ============================================
-def get_theme():
-    if st.session_state.dark_mode:
-        return {
-            'bg': '#1A1A2E',
-            'card_bg': '#16213E',
-            'text': '#FFFFFF',
-            'text_secondary': '#B0B0B0',
-            'border': '#2D2D44',
-            'accent': '#0066FF',
-            'chart_bg': '#16213E',
-            'chart_text': '#FFFFFF',
-            'grid': '#2D2D44',
-            'kpi_delta': '#00CC88'
-        }
-    else:
-        return {
-            'bg': '#FFFFFF',
-            'card_bg': '#FFFFFF',
-            'text': '#000000',
-            'text_secondary': '#666666',
-            'border': '#E0E0E0',
-            'accent': '#0066FF',
-            'chart_bg': '#FFFFFF',
-            'chart_text': '#000000',
-            'grid': '#F0F0F0',
-            'kpi_delta': '#00AA55'
-        }
-
-theme = get_theme()
+theme = {
+    'bg': '#FFFFFF',
+    'card_bg': '#FFFFFF',
+    'text': '#000000',
+    'text_secondary': '#666666',
+    'border': '#E0E0E0',
+    'accent': '#0066FF',
+    'chart_bg': '#FFFFFF',
+    'chart_text': '#000000',
+    'grid': '#F0F0F0',
+    'kpi_delta': '#00AA55'
+}
 
 # ============================================
 # Dynamic CSS based on theme
@@ -389,22 +366,14 @@ CHART_LAYOUT = dict(
 AXIS_TICKFONT = dict(color=theme['chart_text'], size=12)
 
 # ============================================
-# Header with Theme Toggle
+# Header
 # ============================================
-col1, col2 = st.columns([4, 1])
-with col1:
-    st.markdown(f"""
-    <div>
-        <span class="dashboard-title">Sales Analytics Dashboard</span>
-        <p class="dashboard-subtitle">Comprehensive sales data analysis across all regions and products</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    dark_mode = st.toggle("Dark Mode", value=st.session_state.dark_mode, key="theme_toggle")
-    if dark_mode != st.session_state.dark_mode:
-        st.session_state.dark_mode = dark_mode
-        st.rerun()
+st.markdown(f"""
+<div style="padding: 8px 0 16px 0;">
+    <span class="dashboard-title">Sales Analytics Dashboard</span>
+    <p class="dashboard-subtitle">Comprehensive sales data analysis across all regions and products</p>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -737,10 +706,7 @@ with tab3:
     day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     heatmap_data = heatmap_data.reindex(day_order)
     
-    if st.session_state.dark_mode:
-        heatmap_colors = [[0, '#1A1A2E'], [0.5, '#3366FF'], [1, '#0066FF']]
-    else:
-        heatmap_colors = [[0, '#FFFFFF'], [0.5, '#66B3FF'], [1, '#0066FF']]
+    heatmap_colors = [[0, '#FFFFFF'], [0.5, '#66B3FF'], [1, '#0066FF']]
     
     fig = go.Figure(data=go.Heatmap(
         z=heatmap_data.values,

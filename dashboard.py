@@ -9,7 +9,7 @@ import numpy as np
 # ============================================
 st.set_page_config(
     page_title="Sales Analytics Dashboard",
-    page_icon="📊",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -382,7 +382,7 @@ with col1:
     """, unsafe_allow_html=True)
 
 with col2:
-    dark_mode = st.toggle("🌙 Dark Mode", value=st.session_state.dark_mode, key="theme_toggle")
+    dark_mode = st.toggle("Dark Mode", value=st.session_state.dark_mode, key="theme_toggle")
     if dark_mode != st.session_state.dark_mode:
         st.session_state.dark_mode = dark_mode
         st.rerun()

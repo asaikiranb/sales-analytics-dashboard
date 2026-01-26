@@ -212,17 +212,25 @@ st.markdown(f"""
         line-height: 1.5;
     }}
     
-    /* Selectbox / Filters */
-    .stSelectbox label {{
+    /* Selectbox / Filters / Inputs */
+    .stSelectbox label, .stTextInput label, .stNumberInput label {{
         color: {theme['text']} !important;
         font-weight: 500;
         font-size: 0.875rem;
     }}
     
-    .stSelectbox > div > div {{
+    .stSelectbox > div > div, 
+    .stTextInput > div > div, 
+    .stNumberInput > div > div {{
         background-color: {theme['card_bg']} !important;
         border: 1px solid {theme['border']} !important;
         color: {theme['text']} !important;
+    }}
+    
+    /* Input field text color */
+    input {{
+        color: {theme['text']} !important;
+        -webkit-text-fill-color: {theme['text']} !important;
     }}
     
     /* Metrics */
@@ -284,8 +292,13 @@ st.markdown(f"""
     }}
     
     /* Data tables */
-    .dataframe {{
-        background: {theme['card_bg']} !important;
+    [data-testid="stDataFrame"] {{
+        border: 1px solid {theme['border']};
+        border-radius: 8px;
+    }}
+    
+    .dataframe, [data-testid="stDataFrame"] th, [data-testid="stDataFrame"] td {{
+        background-color: {theme['card_bg']} !important;
         color: {theme['text']} !important;
     }}
     
@@ -318,6 +331,12 @@ st.markdown(f"""
     p, span, div, h1, h2, h3, h4, h5, h6, label, strong, b, a, li, td, th {{
         color: {theme['text']} !important;
         -webkit-text-fill-color: {theme['text']} !important;
+    }}
+    
+    /* Fix for placeholder text visibility */
+    ::placeholder {{
+        color: {theme['text_secondary']} !important;
+        opacity: 0.7;
     }}
     
     /* Force secondary text colors */

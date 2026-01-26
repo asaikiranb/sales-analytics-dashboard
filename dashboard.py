@@ -364,16 +364,10 @@ CHART_LAYOUT = dict(
     plot_bgcolor=theme['chart_bg'],
     paper_bgcolor=theme['chart_bg'],
     font=CHART_FONT,
-    margin=dict(l=40, r=40, t=40, b=40),
-    xaxis=dict(
-        tickfont=dict(color=theme['chart_text'], size=12),
-        titlefont=dict(color=theme['chart_text'], size=13)
-    ),
-    yaxis=dict(
-        tickfont=dict(color=theme['chart_text'], size=12),
-        titlefont=dict(color=theme['chart_text'], size=13)
-    )
+    margin=dict(l=40, r=40, t=40, b=40)
 )
+# Axis tick font for all charts
+AXIS_TICKFONT = dict(color=theme['chart_text'], size=12)
 
 # ============================================
 # Header with Theme Toggle
@@ -526,8 +520,8 @@ with tab1:
         fig.update_layout(
             **CHART_LAYOUT,
             height=350,
-            xaxis=dict(showgrid=False, title='', color=theme['chart_text']),
-            yaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title='', color=theme['chart_text'])
+            xaxis=dict(showgrid=False, title=dict(text='', font=AXIS_TICKFONT), tickfont=AXIS_TICKFONT),
+            yaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title=dict(text='', font=AXIS_TICKFONT), tickfont=AXIS_TICKFONT)
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -548,8 +542,8 @@ with tab1:
         fig.update_layout(
             **CHART_LAYOUT,
             height=350,
-            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', color=theme['chart_text']),
-            yaxis=dict(showgrid=False, color=theme['chart_text'])
+            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', tickfont=AXIS_TICKFONT, title=dict(font=AXIS_TICKFONT)),
+            yaxis=dict(showgrid=False, tickfont=AXIS_TICKFONT, title=dict(font=AXIS_TICKFONT))
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -613,8 +607,8 @@ with tab2:
         fig.update_layout(
             **CHART_LAYOUT,
             height=300,
-            xaxis=dict(showgrid=False, title='Hour of Day', tickmode='array', tickvals=list(range(0, 24, 3)), color=theme['chart_text']),
-            yaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title='', color=theme['chart_text'])
+            xaxis=dict(showgrid=False, title=dict(text='Hour of Day', font=AXIS_TICKFONT), tickmode='array', tickvals=list(range(0, 24, 3)), tickfont=AXIS_TICKFONT),
+            yaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title=dict(text='', font=AXIS_TICKFONT), tickfont=AXIS_TICKFONT)
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -636,8 +630,8 @@ with tab2:
         fig.update_layout(
             **CHART_LAYOUT,
             height=300,
-            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', color=theme['chart_text']),
-            yaxis=dict(showgrid=False, color=theme['chart_text'])
+            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', tickfont=AXIS_TICKFONT, title=dict(font=AXIS_TICKFONT)),
+            yaxis=dict(showgrid=False, tickfont=AXIS_TICKFONT, title=dict(font=AXIS_TICKFONT))
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -695,8 +689,8 @@ with tab3:
         fig.update_layout(
             **CHART_LAYOUT,
             height=400,
-            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title='Revenue', color=theme['chart_text']),
-            yaxis=dict(showgrid=False, title='', color=theme['chart_text'])
+            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title=dict(text='Revenue', font=AXIS_TICKFONT), tickfont=AXIS_TICKFONT),
+            yaxis=dict(showgrid=False, title=dict(text='', font=AXIS_TICKFONT), tickfont=AXIS_TICKFONT)
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -740,8 +734,8 @@ with tab3:
     fig.update_layout(
         **CHART_LAYOUT,
         height=300,
-        xaxis=dict(title='Hour of Day', tickmode='array', tickvals=list(range(0, 24, 4)), color=theme['chart_text']),
-        yaxis=dict(title='', color=theme['chart_text'])
+        xaxis=dict(title=dict(text='Hour of Day', font=AXIS_TICKFONT), tickmode='array', tickvals=list(range(0, 24, 4)), tickfont=AXIS_TICKFONT),
+        yaxis=dict(title=dict(text='', font=AXIS_TICKFONT), tickfont=AXIS_TICKFONT)
     )
     st.plotly_chart(fig, use_container_width=True)
     
@@ -827,8 +821,8 @@ with tab4:
         fig.update_layout(
             **CHART_LAYOUT,
             height=500,
-            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', color=theme['chart_text']),
-            yaxis=dict(showgrid=False, color=theme['chart_text'])
+            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', tickfont=AXIS_TICKFONT, title=dict(font=AXIS_TICKFONT)),
+            yaxis=dict(showgrid=False, tickfont=AXIS_TICKFONT, title=dict(font=AXIS_TICKFONT))
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -874,8 +868,8 @@ with tab4:
             **CHART_LAYOUT,
             height=400,
             legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font=dict(color=theme['chart_text'])),
-            xaxis=dict(showgrid=False, title='Month', color=theme['chart_text']),
-            yaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title='Revenue', color=theme['chart_text'])
+            xaxis=dict(showgrid=False, title=dict(text='Month', font=AXIS_TICKFONT), tickfont=AXIS_TICKFONT),
+            yaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title=dict(text='Revenue', font=AXIS_TICKFONT), tickfont=AXIS_TICKFONT)
         )
         st.plotly_chart(fig, use_container_width=True)
         

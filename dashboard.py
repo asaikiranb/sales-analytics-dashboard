@@ -61,11 +61,24 @@ st.markdown(f"""
     /* Import Roboto font */
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
     
-    /* Base styling */
-    html, body, [class*="css"], .stApp {{
+    /* FORCE color scheme - disable browser dark/light mode detection */
+    :root {{
+        color-scheme: light !important;
+    }}
+    
+    /* Override any prefers-color-scheme media queries */
+    @media (prefers-color-scheme: dark) {{
+        :root {{
+            color-scheme: light !important;
+        }}
+    }}
+    
+    /* Base styling - Force all colors explicitly */
+    html, body, [class*="css"], .stApp, .main, .block-container {{
         font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif !important;
         color: {theme['text']} !important;
         background-color: {theme['bg']} !important;
+        -webkit-text-fill-color: {theme['text']} !important;
     }}
     
     .stApp {{
@@ -301,9 +314,28 @@ st.markdown(f"""
         margin-top: 4px;
     }}
     
-    /* Force text colors */
-    p, span, div, h1, h2, h3, h4, h5, h6, label, strong, b {{
+    /* Force text colors - comprehensive override */
+    p, span, div, h1, h2, h3, h4, h5, h6, label, strong, b, a, li, td, th {{
         color: {theme['text']} !important;
+        -webkit-text-fill-color: {theme['text']} !important;
+    }}
+    
+    /* Force secondary text colors */
+    .section-description, [data-testid="stMetricLabel"], .kpi-simple-label, .city-percent {{
+        color: {theme['text_secondary']} !important;
+        -webkit-text-fill-color: {theme['text_secondary']} !important;
+    }}
+    
+    /* Force KPI values to be visible */
+    .kpi-simple-value {{
+        color: {theme['text']} !important;
+        -webkit-text-fill-color: {theme['text']} !important;
+    }}
+    
+    /* Force metric values */
+    [data-testid="stMetricValue"] {{
+        color: {theme['text']} !important;
+        -webkit-text-fill-color: {theme['text']} !important;
     }}
 </style>
 """, unsafe_allow_html=True)

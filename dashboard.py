@@ -359,12 +359,20 @@ df = load_data()
 # Chart Theme based on mode
 # ============================================
 CHART_COLORS = ['#0066FF', '#00AA55', '#FF6B35', '#6B4EFF', '#00B8D9']
-CHART_FONT = dict(family='Roboto, sans-serif', color=theme['chart_text'], size=12)
+CHART_FONT = dict(family='Roboto, sans-serif', color=theme['chart_text'], size=13)
 CHART_LAYOUT = dict(
     plot_bgcolor=theme['chart_bg'],
     paper_bgcolor=theme['chart_bg'],
     font=CHART_FONT,
-    margin=dict(l=40, r=40, t=40, b=40)
+    margin=dict(l=40, r=40, t=40, b=40),
+    xaxis=dict(
+        tickfont=dict(color=theme['chart_text'], size=12),
+        titlefont=dict(color=theme['chart_text'], size=13)
+    ),
+    yaxis=dict(
+        tickfont=dict(color=theme['chart_text'], size=12),
+        titlefont=dict(color=theme['chart_text'], size=13)
+    )
 )
 
 # ============================================

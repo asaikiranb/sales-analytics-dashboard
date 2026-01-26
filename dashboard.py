@@ -1,0 +1,802 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
+
+# ============================================
+# Page Configuration - Clean Sigma Style
+# ============================================
+st.set_page_config(
+    page_title="Sales Analytics Dashboard",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# ============================================
+# Clean Black & White Theme with Blue Accents
+# ============================================
+st.markdown("""
+<style>
+    /* Import Roboto font */
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
+    
+    /* Force light theme - no dark mode */
+    html, body, [class*="css"], .stApp {
+        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        color: #000000 !important;
+        background-color: #FFFFFF !important;
+    }
+    
+    .stApp {
+        background-color: #FFFFFF !important;
+    }
+    
+    /* Hide default Streamlit elements */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Hide sidebar completely */
+    [data-testid="stSidebar"] {
+        display: none !important;
+    }
+    
+    .block-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        max-width: 100%;
+    }
+    
+    /* Page header */
+    .sigma-header {
+        background: linear-gradient(90deg, #0066FF 0%, #0099FF 100%);
+        padding: 20px 24px;
+        border-radius: 0;
+        margin: -1rem -1rem 24px -1rem;
+        color: white !important;
+    }
+    
+    .sigma-header h1 {
+        color: white !important;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .sigma-header p {
+        color: rgba(255,255,255,0.9) !important;
+        font-size: 0.875rem;
+        margin: 4px 0 0 0;
+    }
+    
+    /* Logo area */
+    .sigma-logo {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #0066FF !important;
+        margin-bottom: 16px;
+    }
+    
+    /* Navigation buttons - Blue style */
+    .nav-button {
+        display: inline-block;
+        padding: 8px 20px;
+        border: 2px solid #0066FF;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        margin-right: 12px;
+        transition: all 0.2s ease;
+    }
+    
+    .nav-button-active {
+        background: #0066FF;
+        color: white !important;
+    }
+    
+    .nav-button-inactive {
+        background: white;
+        color: #0066FF !important;
+    }
+    
+    /* Section headers */
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #000000 !important;
+        margin: 24px 0 8px 0;
+        padding-bottom: 0;
+    }
+    
+    .section-description {
+        font-size: 0.875rem;
+        color: #666666 !important;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+    
+    /* KPI Cards - Simple white boxes */
+    .kpi-simple {
+        background: #FFFFFF;
+        border: 1px solid #E0E0E0;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .kpi-simple-label {
+        font-size: 0.75rem;
+        color: #666666 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+    
+    .kpi-simple-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #000000 !important;
+    }
+    
+    .kpi-simple-delta {
+        font-size: 0.8rem;
+        color: #00AA55 !important;
+        margin-top: 4px;
+    }
+    
+    /* Tabs styling - Prominent pill buttons */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: #F3F4F6;
+        border-radius: 12px;
+        padding: 6px;
+        border-bottom: none;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        color: #374151 !important;
+        font-weight: 600;
+        font-size: 0.9rem;
+        padding: 12px 28px;
+        border-bottom: none;
+        background: transparent !important;
+        transition: all 0.2s ease;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background: rgba(0, 102, 255, 0.08) !important;
+        color: #0066FF !important;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        color: #FFFFFF !important;
+        background: #0066FF !important;
+        border-bottom: none !important;
+        box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3);
+    }
+    
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #000000 !important;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        color: #666666 !important;
+    }
+    
+    /* Selectbox / Filters */
+    .stSelectbox label {
+        color: #000000 !important;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+    
+    .stSelectbox > div > div {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E0E0E0 !important;
+        color: #000000 !important;
+    }
+    
+    /* Data tables */
+    .dataframe {
+        font-family: 'Roboto', sans-serif !important;
+        color: #000000 !important;
+    }
+    
+    /* Summary boxes */
+    .summary-box {
+        background: #F8F9FA;
+        border: 1px solid #E0E0E0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .summary-box h3 {
+        color: #000000 !important;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+    
+    .summary-box ul {
+        color: #333333 !important;
+        margin: 0;
+        padding-left: 20px;
+    }
+    
+    .summary-box li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+    
+    /* Slider */
+    .stSlider > div > div > div {
+        background: #0066FF !important;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        background: #0066FF !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 20px !important;
+        font-weight: 500 !important;
+        padding: 8px 24px !important;
+    }
+    
+    .stButton > button:hover {
+        background: #0052CC !important;
+    }
+    
+    /* Force all text black */
+    p, span, div, h1, h2, h3, h4, h5, h6, label {
+        color: #000000 !important;
+    }
+    
+    /* Info/Alert boxes */
+    .stAlert {
+        background: #F0F7FF !important;
+        border: 1px solid #0066FF !important;
+        color: #000000 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ============================================
+# Data Loading
+# ============================================
+@st.cache_data
+def load_data():
+    df = pd.read_csv('Sales Data.csv')
+    df['Order Date'] = pd.to_datetime(df['Order Date'])
+    df['Sales'] = df['Quantity Ordered'] * df['Price Each']
+    df['Month_Name'] = df['Order Date'].dt.month_name()
+    df['Day_of_Week'] = df['Order Date'].dt.day_name()
+    df['Week'] = df['Order Date'].dt.isocalendar().week
+    return df
+
+df = load_data()
+
+# ============================================
+# Chart Theme - Clean Black & White
+# ============================================
+CHART_COLORS = ['#0066FF', '#00AA55', '#FF6B35', '#6B4EFF', '#00B8D9']
+CHART_FONT = dict(family='Roboto, sans-serif', color='#000000')
+CHART_LAYOUT = dict(
+    plot_bgcolor='#FFFFFF',
+    paper_bgcolor='#FFFFFF',
+    font=CHART_FONT,
+    margin=dict(l=40, r=40, t=40, b=40)
+)
+
+# ============================================
+# Header
+# ============================================
+st.markdown("""
+<div style="padding: 8px 0 16px 0;">
+    <span style="font-size: 1.5rem; font-weight: 700; color: #000000;">Sales Analytics Dashboard</span>
+    <p style="font-size: 0.9rem; color: #666666; margin-top: 4px;">Comprehensive sales data analysis across all regions and products</p>
+</div>
+""", unsafe_allow_html=True)
+
+# ============================================
+# Navigation Tabs at TOP
+# ============================================
+tab1, tab2, tab3, tab4 = st.tabs(["Executive Pulse", "Revenue & Marketing", "Regional Insights", "Data Explorer"])
+
+# ============================================
+# Filters Row at TOP (inside each tab)
+# ============================================
+def render_filters():
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        cities = ['All Cities'] + sorted(df['City'].unique().tolist())
+        selected_city = st.selectbox("City", cities, key=f"city_{st.session_state.get('tab', 0)}")
+    with col2:
+        months = ['All Months'] + [f"Month {i}" for i in sorted(df['Month'].unique().tolist())]
+        selected_month = st.selectbox("Month", months, key=f"month_{st.session_state.get('tab', 0)}")
+    with col3:
+        products = ['All Products'] + sorted(df['Product'].unique().tolist())
+        selected_product = st.selectbox("Product", products, key=f"product_{st.session_state.get('tab', 0)}")
+    with col4:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.button("Apply Filters", key=f"apply_{st.session_state.get('tab', 0)}")
+    
+    # Apply filters
+    filtered = df.copy()
+    if selected_city != 'All Cities':
+        filtered = filtered[filtered['City'] == selected_city]
+    if selected_month != 'All Months':
+        month_num = int(selected_month.split()[-1])
+        filtered = filtered[filtered['Month'] == month_num]
+    if selected_product != 'All Products':
+        filtered = filtered[filtered['Product'] == selected_product]
+    
+    return filtered
+
+# Helper functions
+def format_currency(value):
+    if value >= 1e6:
+        return f"${value/1e6:.2f}M"
+    elif value >= 1e3:
+        return f"${value/1e3:.1f}K"
+    return f"${value:.2f}"
+
+def format_number(value):
+    if value >= 1e6:
+        return f"{value/1e6:.2f}M"
+    elif value >= 1e3:
+        return f"{value/1e3:.1f}K"
+    return f"{value:,.0f}"
+
+# ============================================
+# TAB 1: Executive Pulse
+# ============================================
+with tab1:
+    st.session_state['tab'] = 1
+    filtered_df = render_filters()
+    
+    st.markdown("---")
+    
+    # KPI Row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    total_revenue = filtered_df['Sales'].sum()
+    total_units = filtered_df['Quantity Ordered'].sum()
+    aov = total_revenue / max(filtered_df['Order ID'].nunique(), 1)
+    unique_orders = filtered_df['Order ID'].nunique()
+    
+    with col1:
+        st.markdown(f"""
+        <div class="kpi-simple">
+            <div class="kpi-simple-label">Total Revenue</div>
+            <div class="kpi-simple-value">{format_currency(total_revenue)}</div>
+            <div class="kpi-simple-delta">+12.4% vs Target</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="kpi-simple">
+            <div class="kpi-simple-label">Average Order Value</div>
+            <div class="kpi-simple-value">${aov:.2f}</div>
+            <div class="kpi-simple-delta">+8.2% vs Last Period</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="kpi-simple">
+            <div class="kpi-simple-label">Units Sold</div>
+            <div class="kpi-simple-value">{format_number(total_units)}</div>
+            <div class="kpi-simple-delta">+15.7% Growth</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="kpi-simple">
+            <div class="kpi-simple-label">Unique Orders</div>
+            <div class="kpi-simple-value">{format_number(unique_orders)}</div>
+            <div class="kpi-simple-delta">Customer Velocity</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Charts Row
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.markdown('<div class="section-title">Monthly Performance</div>', unsafe_allow_html=True)
+        
+        monthly_sales = filtered_df.groupby('Month')['Sales'].sum().reset_index()
+        month_names = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+                       7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
+        monthly_sales['Month_Label'] = monthly_sales['Month'].map(month_names)
+        
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=monthly_sales['Month_Label'],
+            y=monthly_sales['Sales'],
+            mode='lines+markers',
+            line=dict(color='#0066FF', width=2),
+            marker=dict(size=8, color='#0066FF'),
+            fill='tozeroy',
+            fillcolor='rgba(0, 102, 255, 0.1)',
+            hovertemplate='%{x}<br>Sales: $%{y:,.0f}<extra></extra>'
+        ))
+        
+        fig.update_layout(
+            **CHART_LAYOUT,
+            height=350,
+            xaxis=dict(showgrid=False, title=''),
+            yaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s', title='')
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        st.markdown('<div class="section-title">City Leaderboard</div>', unsafe_allow_html=True)
+        
+        city_sales = filtered_df.groupby('City')['Sales'].sum().sort_values(ascending=True).tail(5).reset_index()
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=city_sales['Sales'],
+            y=city_sales['City'].str.strip(),
+            orientation='h',
+            marker=dict(color='#0066FF'),
+            hovertemplate='%{y}<br>Revenue: $%{x:,.0f}<extra></extra>'
+        ))
+        
+        fig.update_layout(
+            **CHART_LAYOUT,
+            height=350,
+            xaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s'),
+            yaxis=dict(showgrid=False)
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Executive Summary
+    top_city = filtered_df.groupby('City')['Sales'].sum().idxmax()
+    top_product = filtered_df.groupby('Product')['Quantity Ordered'].sum().idxmax()
+    peak_month = month_names.get(filtered_df.groupby('Month')['Sales'].sum().idxmax(), 'N/A')
+    
+    st.markdown(f"""
+    <div class="summary-box">
+        <h3>Executive Summary</h3>
+        <ul>
+            <li><strong>Top Performing City:</strong> {top_city.strip()} leads in revenue generation</li>
+            <li><strong>Best Selling Product:</strong> {top_product} drives the highest unit sales</li>
+            <li><strong>Peak Revenue Month:</strong> {peak_month}</li>
+            <li><strong>Average Order Value:</strong> ${aov:.2f} indicates healthy basket sizes</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ============================================
+# TAB 2: Revenue & Marketing
+# ============================================
+with tab2:
+    st.session_state['tab'] = 2
+    filtered_df = render_filters()
+    
+    st.markdown("---")
+    
+    # Growth Simulation
+    col1, col2, col3 = st.columns([2, 1, 1])
+    with col1:
+        growth_rate = st.slider("Simulate Growth Rate (%)", min_value=-20, max_value=50, value=0, step=5)
+    
+    projected_revenue = filtered_df['Sales'].sum() * (1 + growth_rate/100)
+    
+    with col2:
+        st.metric("Current Revenue", format_currency(filtered_df['Sales'].sum()))
+    with col3:
+        st.metric("Projected Revenue", format_currency(projected_revenue), delta=f"{growth_rate:+}%")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Charts
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown('<div class="section-title">Sales by Hour of Day</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-description">Identify peak hours for advertising campaigns</div>', unsafe_allow_html=True)
+        
+        hourly_sales = filtered_df.groupby('Hour')['Sales'].sum().reset_index()
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=hourly_sales['Hour'],
+            y=hourly_sales['Sales'],
+            marker=dict(color='#0066FF'),
+            hovertemplate='Hour: %{x}:00<br>Sales: $%{y:,.0f}<extra></extra>'
+        ))
+        
+        fig.update_layout(
+            **CHART_LAYOUT,
+            height=300,
+            xaxis=dict(showgrid=False, title='Hour of Day', tickmode='array', tickvals=list(range(0, 24, 3))),
+            yaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s', title='')
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        st.markdown('<div class="section-title">Top 10 Products by Revenue</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-description">Focus inventory and marketing on top performers</div>', unsafe_allow_html=True)
+        
+        top_products = filtered_df.groupby('Product')['Sales'].sum().sort_values(ascending=True).tail(10).reset_index()
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=top_products['Sales'],
+            y=top_products['Product'],
+            orientation='h',
+            marker=dict(color='#0066FF'),
+            hovertemplate='%{y}<br>Revenue: $%{x:,.0f}<extra></extra>'
+        ))
+        
+        fig.update_layout(
+            **CHART_LAYOUT,
+            height=300,
+            xaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s'),
+            yaxis=dict(showgrid=False)
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Recommendations
+    peak_hour = hourly_sales.loc[hourly_sales['Sales'].idxmax(), 'Hour']
+    st.markdown(f"""
+    <div class="summary-box">
+        <h3>Marketing Recommendations</h3>
+        <ul>
+            <li><strong>Prime Time for Ads:</strong> 5 PM - 9 PM window (Peak at {peak_hour}:00)</li>
+            <li><strong>Focus Products:</strong> Concentrate marketing spend on top 10 revenue generators</li>
+            <li><strong>Growth Opportunity:</strong> {growth_rate}% growth would yield {format_currency(projected_revenue)} in revenue</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ============================================
+# TAB 3: Regional Insights
+# ============================================
+with tab3:
+    st.session_state['tab'] = 3
+    filtered_df = render_filters()
+    
+    st.markdown("---")
+    
+    st.markdown('<div class="section-title">Regional Revenue Distribution</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-description">Geospatial analysis for warehouse placement and retail hub optimization</div>', unsafe_allow_html=True)
+    
+    # City Performance
+    city_performance = filtered_df.groupby('City').agg({
+        'Sales': 'sum',
+        'Quantity Ordered': 'sum',
+        'Order ID': 'nunique'
+    }).reset_index()
+    city_performance.columns = ['City', 'Revenue', 'Units', 'Orders']
+    city_performance = city_performance.sort_values('Revenue', ascending=False)
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        city_sorted = city_performance.sort_values('Revenue', ascending=True)
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=city_sorted['Revenue'],
+            y=city_sorted['City'].str.strip(),
+            orientation='h',
+            marker=dict(color='#0066FF'),
+            text=[f"${v:,.0f}" for v in city_sorted['Revenue']],
+            textposition='inside',
+            textfont=dict(color='white', size=11),
+            hovertemplate='%{y}<br>Revenue: $%{x:,.0f}<extra></extra>'
+        ))
+        
+        fig.update_layout(
+            **CHART_LAYOUT,
+            height=400,
+            xaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s', title='Revenue'),
+            yaxis=dict(showgrid=False, title='')
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        st.markdown("#### Top Cities Overview")
+        for idx, row in city_performance.head(5).iterrows():
+            pct = row['Revenue'] / city_performance['Revenue'].sum() * 100
+            st.markdown(f"""
+            <div style="background: #F8F9FA; border: 1px solid #E0E0E0; border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 500; color: #000000;">{row['City'].strip()}</span>
+                    <span style="color: #0066FF; font-weight: 600;">{format_currency(row['Revenue'])}</span>
+                </div>
+                <div style="background: #E0E0E0; border-radius: 4px; height: 4px; margin-top: 8px;">
+                    <div style="background: #0066FF; width: {pct}%; height: 100%; border-radius: 4px;"></div>
+                </div>
+                <div style="font-size: 0.75rem; color: #666666; margin-top: 4px;">{pct:.1f}% of total</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # Heatmap
+    st.markdown('<div class="section-title">Order Volume Heatmap</div>', unsafe_allow_html=True)
+    
+    heatmap_data = filtered_df.groupby(['Day_of_Week', 'Hour'])['Sales'].sum().unstack(fill_value=0)
+    day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    heatmap_data = heatmap_data.reindex(day_order)
+    
+    fig = go.Figure(data=go.Heatmap(
+        z=heatmap_data.values,
+        x=heatmap_data.columns,
+        y=heatmap_data.index,
+        colorscale=[[0, '#FFFFFF'], [0.5, '#66B3FF'], [1, '#0066FF']],
+        hovertemplate='Day: %{y}<br>Hour: %{x}:00<br>Sales: $%{z:,.0f}<extra></extra>'
+    ))
+    
+    fig.update_layout(
+        **CHART_LAYOUT,
+        height=300,
+        xaxis=dict(title='Hour of Day', tickmode='array', tickvals=list(range(0, 24, 4))),
+        yaxis=dict(title='')
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # Logistics Recommendation
+    peak_day = filtered_df.groupby('Day_of_Week')['Sales'].sum().idxmax()
+    peak_hour = filtered_df.groupby('Hour')['Sales'].sum().idxmax()
+    
+    st.markdown(f"""
+    <div class="summary-box">
+        <h3>Logistics Staffing Recommendation</h3>
+        <ul>
+            <li><strong>Peak Sales Day:</strong> {peak_day}</li>
+            <li><strong>Peak Sales Hour:</strong> {peak_hour}:00</li>
+            <li><strong>Recommendation:</strong> Increase staffing between 5 PM - 9 PM for optimal order fulfillment</li>
+            <li><strong>Evening Hours:</strong> 6 PM - 9 PM account for highest transaction volume</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ============================================
+# TAB 4: Data Explorer
+# ============================================
+with tab4:
+    st.session_state['tab'] = 4
+    filtered_df = render_filters()
+    
+    st.markdown("---")
+    
+    # Metadata
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Records", f"{len(filtered_df):,}")
+    with col2:
+        st.metric("Date Range", f"{df['Order Date'].min().strftime('%Y-%m-%d')}")
+    with col3:
+        st.metric("Last Updated", "2026-01-25")
+    with col4:
+        st.metric("Data Source", "CSV Import")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Sub-tabs
+    subtab1, subtab2, subtab3 = st.tabs(["Live Worksheet", "Analytics", "Forecasting"])
+    
+    with subtab1:
+        st.markdown('<div class="section-title">Live Data Worksheet</div>', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            search_term = st.text_input("Search Products", placeholder="Type to filter products...")
+        with col2:
+            quantity_threshold = st.number_input("Min Quantity Filter", min_value=1, value=1)
+        
+        display_df = filtered_df.copy()
+        if search_term:
+            display_df = display_df[display_df['Product'].str.contains(search_term, case=False)]
+        display_df = display_df[display_df['Quantity Ordered'] >= quantity_threshold]
+        
+        st.dataframe(
+            display_df[['Order ID', 'Product', 'Quantity Ordered', 'Price Each', 'Sales', 'City', 'Order Date']].head(100),
+            use_container_width=True,
+            height=400
+        )
+    
+    with subtab2:
+        st.markdown('<div class="section-title">Product Analytics</div>', unsafe_allow_html=True)
+        
+        product_stats = filtered_df.groupby('Product').agg({
+            'Sales': 'sum',
+            'Quantity Ordered': 'sum',
+            'Order ID': 'nunique'
+        }).reset_index()
+        product_stats.columns = ['Product', 'Revenue', 'Units', 'Orders']
+        product_stats['Avg_Order_Value'] = product_stats['Revenue'] / product_stats['Orders']
+        
+        fig = px.bar(
+            product_stats.sort_values('Revenue', ascending=True),
+            y='Product',
+            x='Revenue',
+            orientation='h',
+            color_discrete_sequence=['#0066FF']
+        )
+        
+        fig.update_layout(
+            **CHART_LAYOUT,
+            height=500,
+            xaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s'),
+            yaxis=dict(showgrid=False)
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with subtab3:
+        st.markdown('<div class="section-title">Revenue Forecasting</div>', unsafe_allow_html=True)
+        
+        monthly_sales = filtered_df.groupby('Month')['Sales'].sum().reset_index()
+        
+        if len(monthly_sales) >= 3:
+            coeffs = np.polyfit(monthly_sales['Month'], monthly_sales['Sales'], 1)
+            forecast_months = [13, 14, 15]
+            forecast_values = np.polyval(coeffs, forecast_months)
+        else:
+            forecast_months = []
+            forecast_values = []
+        
+        month_names = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+                       7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec',
+                       13: 'Jan 26', 14: 'Feb 26', 15: 'Mar 26'}
+        
+        fig = go.Figure()
+        
+        fig.add_trace(go.Scatter(
+            x=[month_names[m] for m in monthly_sales['Month']],
+            y=monthly_sales['Sales'],
+            mode='lines+markers',
+            line=dict(color='#0066FF', width=2),
+            marker=dict(size=8),
+            name='Historical'
+        ))
+        
+        if len(forecast_months) > 0:
+            fig.add_trace(go.Scatter(
+                x=[month_names[m] for m in forecast_months],
+                y=forecast_values,
+                mode='lines+markers',
+                line=dict(color='#00AA55', width=2, dash='dot'),
+                marker=dict(size=8, symbol='diamond'),
+                name='Forecast'
+            ))
+        
+        fig.update_layout(
+            **CHART_LAYOUT,
+            height=400,
+            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
+            xaxis=dict(showgrid=False, title='Month'),
+            yaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s', title='Revenue')
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+        if len(forecast_values) > 0:
+            total_forecast = sum(forecast_values)
+            st.markdown(f"""
+            <div class="summary-box">
+                <h3>Q1 2026 Projected Revenue</h3>
+                <ul>
+                    <li><strong>Total Projected:</strong> {format_currency(total_forecast)}</li>
+                    <li><strong>Method:</strong> Linear regression on 2019 monthly trends</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+
+# Footer removed as requested

@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import numpy as np
 
 # ============================================
-# Page Configuration - Clean Sigma Style
+# Page Configuration
 # ============================================
 st.set_page_config(
     page_title="Sales Analytics Dashboard",
@@ -15,258 +15,296 @@ st.set_page_config(
 )
 
 # ============================================
-# Clean Black & White Theme with Blue Accents
+# Theme Toggle State
 # ============================================
-st.markdown("""
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = False
+
+# ============================================
+# Theme Colors
+# ============================================
+def get_theme():
+    if st.session_state.dark_mode:
+        return {
+            'bg': '#1A1A2E',
+            'card_bg': '#16213E',
+            'text': '#FFFFFF',
+            'text_secondary': '#B0B0B0',
+            'border': '#2D2D44',
+            'accent': '#0066FF',
+            'chart_bg': '#16213E',
+            'chart_text': '#FFFFFF',
+            'grid': '#2D2D44',
+            'kpi_delta': '#00CC88'
+        }
+    else:
+        return {
+            'bg': '#FFFFFF',
+            'card_bg': '#FFFFFF',
+            'text': '#000000',
+            'text_secondary': '#666666',
+            'border': '#E0E0E0',
+            'accent': '#0066FF',
+            'chart_bg': '#FFFFFF',
+            'chart_text': '#000000',
+            'grid': '#F0F0F0',
+            'kpi_delta': '#00AA55'
+        }
+
+theme = get_theme()
+
+# ============================================
+# Dynamic CSS based on theme
+# ============================================
+st.markdown(f"""
 <style>
     /* Import Roboto font */
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
     
-    /* Force light theme - no dark mode */
-    html, body, [class*="css"], .stApp {
+    /* Base styling */
+    html, body, [class*="css"], .stApp {{
         font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        color: #000000 !important;
-        background-color: #FFFFFF !important;
-    }
+        color: {theme['text']} !important;
+        background-color: {theme['bg']} !important;
+    }}
     
-    .stApp {
-        background-color: #FFFFFF !important;
-    }
+    .stApp {{
+        background-color: {theme['bg']} !important;
+    }}
     
     /* Hide default Streamlit elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
+    header {{visibility: hidden;}}
     
     /* Hide sidebar completely */
-    [data-testid="stSidebar"] {
+    [data-testid="stSidebar"] {{
         display: none !important;
-    }
+    }}
     
-    .block-container {
+    .block-container {{
         padding-top: 1rem;
         padding-bottom: 1rem;
         max-width: 100%;
-    }
+    }}
     
-    /* Page header */
-    .sigma-header {
-        background: linear-gradient(90deg, #0066FF 0%, #0099FF 100%);
-        padding: 20px 24px;
-        border-radius: 0;
-        margin: -1rem -1rem 24px -1rem;
-        color: white !important;
-    }
-    
-    .sigma-header h1 {
-        color: white !important;
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 0;
-    }
-    
-    .sigma-header p {
-        color: rgba(255,255,255,0.9) !important;
-        font-size: 0.875rem;
-        margin: 4px 0 0 0;
-    }
-    
-    /* Logo area */
-    .sigma-logo {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #0066FF !important;
+    /* Header area */
+    .dashboard-header {{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0 16px 0;
+        border-bottom: 1px solid {theme['border']};
         margin-bottom: 16px;
-    }
+    }}
     
-    /* Navigation buttons - Blue style */
-    .nav-button {
-        display: inline-block;
-        padding: 8px 20px;
-        border: 2px solid #0066FF;
+    .dashboard-title {{
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: {theme['text']} !important;
+    }}
+    
+    .dashboard-subtitle {{
+        font-size: 0.9rem;
+        color: {theme['text_secondary']} !important;
+        margin-top: 4px;
+    }}
+    
+    /* Theme toggle button */
+    .theme-toggle {{
+        background: {theme['card_bg']};
+        border: 1px solid {theme['border']};
         border-radius: 20px;
+        padding: 8px 16px;
+        cursor: pointer;
         font-size: 0.875rem;
         font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        margin-right: 12px;
-        transition: all 0.2s ease;
-    }
-    
-    .nav-button-active {
-        background: #0066FF;
-        color: white !important;
-    }
-    
-    .nav-button-inactive {
-        background: white;
-        color: #0066FF !important;
-    }
-    
-    /* Section headers */
-    .section-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #000000 !important;
-        margin: 24px 0 8px 0;
-        padding-bottom: 0;
-    }
-    
-    .section-description {
-        font-size: 0.875rem;
-        color: #666666 !important;
-        margin-bottom: 16px;
-        line-height: 1.5;
-    }
-    
-    /* KPI Cards - Simple white boxes */
-    .kpi-simple {
-        background: #FFFFFF;
-        border: 1px solid #E0E0E0;
-        border-radius: 8px;
-        padding: 20px;
-        text-align: center;
-    }
-    
-    .kpi-simple-label {
-        font-size: 0.75rem;
-        color: #666666 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
-    
-    .kpi-simple-value {
-        font-size: 2rem;
-        font-weight: 600;
-        color: #000000 !important;
-    }
-    
-    .kpi-simple-delta {
-        font-size: 0.8rem;
-        color: #00AA55 !important;
-        margin-top: 4px;
-    }
+        color: {theme['text']} !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }}
     
     /* Tabs styling - Prominent pill buttons */
-    .stTabs [data-baseweb="tab-list"] {
+    .stTabs [data-baseweb="tab-list"] {{
         gap: 8px;
-        background: #F3F4F6;
+        background: {theme['card_bg']};
+        border: 1px solid {theme['border']};
         border-radius: 12px;
         padding: 6px;
-        border-bottom: none;
-    }
+    }}
     
-    .stTabs [data-baseweb="tab"] {
+    .stTabs [data-baseweb="tab"] {{
         border-radius: 8px;
-        color: #374151 !important;
+        color: {theme['text']} !important;
         font-weight: 600;
         font-size: 0.9rem;
         padding: 12px 28px;
-        border-bottom: none;
         background: transparent !important;
         transition: all 0.2s ease;
-    }
+    }}
     
-    .stTabs [data-baseweb="tab"]:hover {
-        background: rgba(0, 102, 255, 0.08) !important;
-        color: #0066FF !important;
-    }
+    .stTabs [data-baseweb="tab"]:hover {{
+        background: rgba(0, 102, 255, 0.1) !important;
+        color: {theme['accent']} !important;
+    }}
     
-    .stTabs [aria-selected="true"] {
+    .stTabs [aria-selected="true"] {{
         color: #FFFFFF !important;
-        background: #0066FF !important;
-        border-bottom: none !important;
+        background: {theme['accent']} !important;
         box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3);
-    }
+    }}
     
-    /* Metrics */
-    [data-testid="stMetricValue"] {
-        font-size: 1.5rem;
+    /* KPI Cards */
+    .kpi-simple {{
+        background: {theme['card_bg']};
+        border: 1px solid {theme['border']};
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+    }}
+    
+    .kpi-simple-label {{
+        font-size: 0.75rem;
+        color: {theme['text_secondary']} !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }}
+    
+    .kpi-simple-value {{
+        font-size: 2rem;
         font-weight: 600;
-        color: #000000 !important;
-    }
+        color: {theme['text']} !important;
+    }}
     
-    [data-testid="stMetricLabel"] {
-        color: #666666 !important;
-    }
+    .kpi-simple-delta {{
+        font-size: 0.8rem;
+        color: {theme['kpi_delta']} !important;
+        margin-top: 4px;
+    }}
+    
+    /* Section headers */
+    .section-title {{
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: {theme['text']} !important;
+        margin: 24px 0 8px 0;
+    }}
+    
+    .section-description {{
+        font-size: 0.875rem;
+        color: {theme['text_secondary']} !important;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }}
     
     /* Selectbox / Filters */
-    .stSelectbox label {
-        color: #000000 !important;
+    .stSelectbox label {{
+        color: {theme['text']} !important;
         font-weight: 500;
         font-size: 0.875rem;
-    }
+    }}
     
-    .stSelectbox > div > div {
-        background-color: #FFFFFF !important;
-        border: 1px solid #E0E0E0 !important;
-        color: #000000 !important;
-    }
+    .stSelectbox > div > div {{
+        background-color: {theme['card_bg']} !important;
+        border: 1px solid {theme['border']} !important;
+        color: {theme['text']} !important;
+    }}
     
-    /* Data tables */
-    .dataframe {
-        font-family: 'Roboto', sans-serif !important;
-        color: #000000 !important;
-    }
+    /* Metrics */
+    [data-testid="stMetricValue"] {{
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: {theme['text']} !important;
+    }}
+    
+    [data-testid="stMetricLabel"] {{
+        color: {theme['text_secondary']} !important;
+    }}
     
     /* Summary boxes */
-    .summary-box {
-        background: #F8F9FA;
-        border: 1px solid #E0E0E0;
+    .summary-box {{
+        background: {theme['card_bg']};
+        border: 1px solid {theme['border']};
         border-radius: 8px;
         padding: 20px;
         margin-top: 20px;
-    }
+    }}
     
-    .summary-box h3 {
-        color: #000000 !important;
+    .summary-box h3 {{
+        color: {theme['text']} !important;
         font-size: 1rem;
         font-weight: 600;
         margin-bottom: 12px;
-    }
+    }}
     
-    .summary-box ul {
-        color: #333333 !important;
+    .summary-box ul {{
+        color: {theme['text']} !important;
         margin: 0;
         padding-left: 20px;
-    }
+    }}
     
-    .summary-box li {
+    .summary-box li {{
         margin-bottom: 8px;
         line-height: 1.5;
-    }
+        color: {theme['text']} !important;
+    }}
     
     /* Slider */
-    .stSlider > div > div > div {
-        background: #0066FF !important;
-    }
+    .stSlider > div > div > div {{
+        background: {theme['accent']} !important;
+    }}
     
     /* Buttons */
-    .stButton > button {
-        background: #0066FF !important;
+    .stButton > button {{
+        background: {theme['accent']} !important;
         color: white !important;
         border: none !important;
         border-radius: 20px !important;
         font-weight: 500 !important;
         padding: 8px 24px !important;
-    }
+    }}
     
-    .stButton > button:hover {
+    .stButton > button:hover {{
         background: #0052CC !important;
-    }
+    }}
     
-    /* Force all text black */
-    p, span, div, h1, h2, h3, h4, h5, h6, label {
-        color: #000000 !important;
-    }
+    /* Data tables */
+    .dataframe {{
+        background: {theme['card_bg']} !important;
+        color: {theme['text']} !important;
+    }}
     
-    /* Info/Alert boxes */
-    .stAlert {
-        background: #F0F7FF !important;
-        border: 1px solid #0066FF !important;
-        color: #000000 !important;
-    }
+    /* City cards */
+    .city-card {{
+        background: {theme['card_bg']};
+        border: 1px solid {theme['border']};
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
+    }}
+    
+    .city-name {{
+        font-weight: 500;
+        color: {theme['text']} !important;
+    }}
+    
+    .city-revenue {{
+        color: {theme['accent']} !important;
+        font-weight: 600;
+    }}
+    
+    .city-percent {{
+        font-size: 0.75rem;
+        color: {theme['text_secondary']} !important;
+        margin-top: 4px;
+    }}
+    
+    /* Force text colors */
+    p, span, div, h1, h2, h3, h4, h5, h6, label, strong, b {{
+        color: {theme['text']} !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -286,26 +324,36 @@ def load_data():
 df = load_data()
 
 # ============================================
-# Chart Theme - Clean Black & White with visible labels
+# Chart Theme based on mode
 # ============================================
 CHART_COLORS = ['#0066FF', '#00AA55', '#FF6B35', '#6B4EFF', '#00B8D9']
-CHART_FONT = dict(family='Roboto, sans-serif', color='#333333', size=12)
+CHART_FONT = dict(family='Roboto, sans-serif', color=theme['chart_text'], size=12)
 CHART_LAYOUT = dict(
-    plot_bgcolor='#FFFFFF',
-    paper_bgcolor='#FFFFFF',
+    plot_bgcolor=theme['chart_bg'],
+    paper_bgcolor=theme['chart_bg'],
     font=CHART_FONT,
     margin=dict(l=40, r=40, t=40, b=40)
 )
 
 # ============================================
-# Header
+# Header with Theme Toggle
 # ============================================
-st.markdown("""
-<div style="padding: 8px 0 16px 0;">
-    <span style="font-size: 1.5rem; font-weight: 700; color: #000000;">Sales Analytics Dashboard</span>
-    <p style="font-size: 0.9rem; color: #666666; margin-top: 4px;">Comprehensive sales data analysis across all regions and products</p>
-</div>
-""", unsafe_allow_html=True)
+col1, col2 = st.columns([4, 1])
+with col1:
+    st.markdown(f"""
+    <div>
+        <span class="dashboard-title">Sales Analytics Dashboard</span>
+        <p class="dashboard-subtitle">Comprehensive sales data analysis across all regions and products</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    toggle_label = "🌙 Dark" if not st.session_state.dark_mode else "☀️ Light"
+    if st.button(toggle_label, key="theme_toggle", use_container_width=True):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
+
+st.markdown("---")
 
 # ============================================
 # Navigation Tabs at TOP
@@ -438,8 +486,8 @@ with tab1:
         fig.update_layout(
             **CHART_LAYOUT,
             height=350,
-            xaxis=dict(showgrid=False, title=''),
-            yaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s', title='')
+            xaxis=dict(showgrid=False, title='', color=theme['chart_text']),
+            yaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title='', color=theme['chart_text'])
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -460,8 +508,8 @@ with tab1:
         fig.update_layout(
             **CHART_LAYOUT,
             height=350,
-            xaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s'),
-            yaxis=dict(showgrid=False)
+            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', color=theme['chart_text']),
+            yaxis=dict(showgrid=False, color=theme['chart_text'])
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -525,8 +573,8 @@ with tab2:
         fig.update_layout(
             **CHART_LAYOUT,
             height=300,
-            xaxis=dict(showgrid=False, title='Hour of Day', tickmode='array', tickvals=list(range(0, 24, 3))),
-            yaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s', title='')
+            xaxis=dict(showgrid=False, title='Hour of Day', tickmode='array', tickvals=list(range(0, 24, 3)), color=theme['chart_text']),
+            yaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title='', color=theme['chart_text'])
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -548,8 +596,8 @@ with tab2:
         fig.update_layout(
             **CHART_LAYOUT,
             height=300,
-            xaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s'),
-            yaxis=dict(showgrid=False)
+            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', color=theme['chart_text']),
+            yaxis=dict(showgrid=False, color=theme['chart_text'])
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -607,8 +655,8 @@ with tab3:
         fig.update_layout(
             **CHART_LAYOUT,
             height=400,
-            xaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s', title='Revenue'),
-            yaxis=dict(showgrid=False, title='')
+            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title='Revenue', color=theme['chart_text']),
+            yaxis=dict(showgrid=False, title='', color=theme['chart_text'])
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -617,15 +665,15 @@ with tab3:
         for idx, row in city_performance.head(5).iterrows():
             pct = row['Revenue'] / city_performance['Revenue'].sum() * 100
             st.markdown(f"""
-            <div style="background: #F8F9FA; border: 1px solid #E0E0E0; border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+            <div class="city-card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: 500; color: #000000;">{row['City'].strip()}</span>
-                    <span style="color: #0066FF; font-weight: 600;">{format_currency(row['Revenue'])}</span>
+                    <span class="city-name">{row['City'].strip()}</span>
+                    <span class="city-revenue">{format_currency(row['Revenue'])}</span>
                 </div>
-                <div style="background: #E0E0E0; border-radius: 4px; height: 4px; margin-top: 8px;">
-                    <div style="background: #0066FF; width: {pct}%; height: 100%; border-radius: 4px;"></div>
+                <div style="background: {theme['border']}; border-radius: 4px; height: 4px; margin-top: 8px;">
+                    <div style="background: {theme['accent']}; width: {pct}%; height: 100%; border-radius: 4px;"></div>
                 </div>
-                <div style="font-size: 0.75rem; color: #666666; margin-top: 4px;">{pct:.1f}% of total</div>
+                <div class="city-percent">{pct:.1f}% of total</div>
             </div>
             """, unsafe_allow_html=True)
     
@@ -636,19 +684,24 @@ with tab3:
     day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     heatmap_data = heatmap_data.reindex(day_order)
     
+    if st.session_state.dark_mode:
+        heatmap_colors = [[0, '#1A1A2E'], [0.5, '#3366FF'], [1, '#0066FF']]
+    else:
+        heatmap_colors = [[0, '#FFFFFF'], [0.5, '#66B3FF'], [1, '#0066FF']]
+    
     fig = go.Figure(data=go.Heatmap(
         z=heatmap_data.values,
         x=heatmap_data.columns,
         y=heatmap_data.index,
-        colorscale=[[0, '#FFFFFF'], [0.5, '#66B3FF'], [1, '#0066FF']],
+        colorscale=heatmap_colors,
         hovertemplate='Day: %{y}<br>Hour: %{x}:00<br>Sales: $%{z:,.0f}<extra></extra>'
     ))
     
     fig.update_layout(
         **CHART_LAYOUT,
         height=300,
-        xaxis=dict(title='Hour of Day', tickmode='array', tickvals=list(range(0, 24, 4))),
-        yaxis=dict(title='')
+        xaxis=dict(title='Hour of Day', tickmode='array', tickvals=list(range(0, 24, 4)), color=theme['chart_text']),
+        yaxis=dict(title='', color=theme['chart_text'])
     )
     st.plotly_chart(fig, use_container_width=True)
     
@@ -722,7 +775,6 @@ with tab4:
             'Order ID': 'nunique'
         }).reset_index()
         product_stats.columns = ['Product', 'Revenue', 'Units', 'Orders']
-        product_stats['Avg_Order_Value'] = product_stats['Revenue'] / product_stats['Orders']
         
         fig = px.bar(
             product_stats.sort_values('Revenue', ascending=True),
@@ -735,8 +787,8 @@ with tab4:
         fig.update_layout(
             **CHART_LAYOUT,
             height=500,
-            xaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s'),
-            yaxis=dict(showgrid=False)
+            xaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', color=theme['chart_text']),
+            yaxis=dict(showgrid=False, color=theme['chart_text'])
         )
         st.plotly_chart(fig, use_container_width=True)
     
@@ -781,9 +833,9 @@ with tab4:
         fig.update_layout(
             **CHART_LAYOUT,
             height=400,
-            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
-            xaxis=dict(showgrid=False, title='Month'),
-            yaxis=dict(showgrid=True, gridcolor='#F0F0F0', tickformat='$,.0s', title='Revenue')
+            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font=dict(color=theme['chart_text'])),
+            xaxis=dict(showgrid=False, title='Month', color=theme['chart_text']),
+            yaxis=dict(showgrid=True, gridcolor=theme['grid'], tickformat='$,.0s', title='Revenue', color=theme['chart_text'])
         )
         st.plotly_chart(fig, use_container_width=True)
         
@@ -798,5 +850,3 @@ with tab4:
                 </ul>
             </div>
             """, unsafe_allow_html=True)
-
-# Footer removed as requested

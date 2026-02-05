@@ -374,11 +374,6 @@ st.markdown(f"""
         <span class="dashboard-title">Sales Analytics Dashboard</span>
         <p class="dashboard-subtitle">Comprehensive sales data analysis across all regions and products</p>
     </div>
-    <div style="text-align: right; max-width: 450px;">
-        <p style="font-size: 0.95rem; color: {theme['text_secondary']}; font-weight: 500; line-height: 1.4; opacity: 0.9; margin: 0;">
-           
-        </p>
-    </div>
 </div>
 """, unsafe_allow_html=True)
 
